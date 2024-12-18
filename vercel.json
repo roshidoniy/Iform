@@ -1,16 +1,8 @@
 {
     "rewrites": [
-      {
-        "source": "/login",
-        "destination": "/src/pages/login.tsx"
-      },
-      {
-        "source": "/login/",
-        "destination": "/src/pages/login.tsx"
-      },
-      {
-        "source": "/:path*",
-        "destination": "/src/pages/:path*.tsx"
-      }
-    ]
+      { "source": "/(.*)", "destination": "/index.html" }
+    ],
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "framework": "vite"
   }
