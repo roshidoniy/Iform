@@ -1,12 +1,16 @@
 {
-  "rewrites": [
-    {
-      "source": "/login/",
-      "destination": "src/pages/login.tsx"
-    },
-    {
-      "source": "/",
-      "destination": "src/pages/Home.tsx"
-    }
-  ]
-}
+    "rewrites": [
+      {
+        "source": "/login",
+        "destination": "/src/pages/login.tsx"
+      },
+      {
+        "source": "/login/",
+        "destination": "/src/pages/login.tsx"
+      },
+      {
+        "source": "/:path*",
+        "destination": "/src/pages/:path*.tsx"
+      }
+    ]
+  }
