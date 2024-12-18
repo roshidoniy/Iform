@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/login/",
-      "destination": "/src/pages/login.tsx"
+      "destination": "src/pages/login.tsx"
     },
     {
       "source": "/",
-      "destination": "/src/pages/Home.tsx"
+      "destination": "src/pages/Home.tsx"
     }
   ]
 }
