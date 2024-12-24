@@ -1,6 +1,6 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import firebaseConfig from "../secrets/firebaseSDK";
-import { User } from "./firebase.types";
+import { User } from "../types/firebase.types";
 import { getFirestore, doc, collection, setDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 const app = initializeApp(firebaseConfig);
