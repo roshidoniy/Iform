@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
-import { FirebaseError } from 'firebase/app';
-import { signInWithGoogle } from '../services/firebase-service';
+import { useEffect, useState } from 'react';
+import { continueWithGoogle, signInWithPassword } from '../services/firebase-service';
 import { Link, useNavigate } from 'react-router';
+import { getAuth, User } from 'firebase/auth';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -10,15 +9,24 @@ export default function Login() {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
+    const auth = getAuth();
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
+            if (user) {
+                navigate('/');
+            }
+        });
+
+        return () => unsubscribe();
+    }, [auth, navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const auth = getAuth();
-            await (await signInWithEmailAndPassword(auth, email, password))
-            navigate('/')
+            await signInWithPassword(email, password);
         } catch (error){
-            if(error instanceof FirebaseError){
+            if(error instanceof Error){
                 setError(error.message)
                 return
             }
@@ -27,10 +35,10 @@ export default function Login() {
 
     const handleGoogleSignIn = async () => {
         try {
-            await signInWithGoogle();
-            navigate('/dashboard');
+            await continueWithGoogle();
+            navigate('/');
         } catch (error) {
-            if(error instanceof FirebaseError){
+            if(error instanceof Error){
                 setError(error.name)
                 return
             }
@@ -112,7 +120,7 @@ export default function Login() {
                         onClick={handleGoogleSignIn}
                         className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
-                        Sign in with Google
+                        Continue with Google
                     </button>
                 </div>
 

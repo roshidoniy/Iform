@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { signUpUser, signInWithGoogle } from '../services/firebase-service';
+import { useEffect, useState } from 'react';
+import { signUpUser, continueWithGoogle } from '../services/firebase-service';
 import { Link, useNavigate } from 'react-router';
+import { getAuth } from 'firebase/auth';
 
 export default function SignUp() {
     const [email, setEmail] = useState('');
@@ -9,6 +10,17 @@ export default function SignUp() {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
+    const auth = getAuth();
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user: any) => {
+            if (user) {
+                navigate('/');
+            }
+        });
+
+        return () => unsubscribe();
+    }, [auth, navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -16,14 +28,25 @@ export default function SignUp() {
             setError("Passwords don't match");
             return;
         }
-
-        await signUpUser({email, password});
-        navigate('/');
+        try {
+            await signUpUser({email, password});
+            
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            }
+        }
     };
 
     const handleGoogleSignUp = async () => {
-        await signInWithGoogle();
-        navigate('/');
+        try {
+            await continueWithGoogle();
+            navigate('/');
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            }
+        }
     };
 
     return (
@@ -129,7 +152,7 @@ export default function SignUp() {
                         onClick={handleGoogleSignUp}
                         className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
-                        Sign up with Google
+                        Continue with Google
                     </button>
                 </div>
 

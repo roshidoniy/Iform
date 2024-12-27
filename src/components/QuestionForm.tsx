@@ -1,22 +1,19 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { Question } from "../types/questions.types";
 
 const QuestionForm = () => {
     const [questions, setQuestions] = useState<Question[]>([]);
 
     const addQuestion = () => {
-        setQuestions([...questions, { 
+        const newQuestion: Question = {
             id: Date.now(),
             type: "TEXT", 
             question: "",
             required: false,
             options: []
-        }]);
+        };
+        setQuestions([...questions, newQuestion]);
     };
-
-    useEffect(()=> {
-        console.log(questions)
-    }, [questions])
 
     const removeQuestion = (id: number) => {
         setQuestions(questions.filter(q => q.id !== id));
@@ -30,7 +27,7 @@ const QuestionForm = () => {
 
     const addOption = (questionId: number) => {
         setQuestions(questions.map(q => 
-            q.id === questionId 
+            q.id === questionId
                 ? { ...q, options: [...(q.options || []), { id: Date.now(), text: "" }] }
                 : q
         ));
@@ -76,6 +73,9 @@ const QuestionForm = () => {
                             >
                                     <option key={1} value="TEXT">
                                         Text
+                                    </option>
+                                    <option key={1} value="NUMBER">
+                                        Number
                                     </option>
                                     <option key={2} value="ONE-LINE">
                                         One line
