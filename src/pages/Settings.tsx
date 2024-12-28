@@ -1,97 +1,11 @@
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { addAdmin } from '../services/firebase-service';
 import { Link } from 'react-router';
-
-function ProfileSettings() {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    return (
-        <div className="bg-white p-8 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">Profile Information</h3>
-            
-            <div className="space-y-6">
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Display Name</p>
-                    <p className="mt-1 text-sm text-gray-900">{user?.displayName || 'Not set'}</p>
-                </div>
-
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Email</p>
-                    <p className="mt-1 text-sm text-gray-900">{user?.email}</p>
-                </div>
-
-                <div>
-                    <p className="text-sm font-medium text-gray-500">Account Created</p>
-                    <p className="mt-1 text-sm text-gray-900">
-                        {user?.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'Unknown'}
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-
-function AdminManagement() {
-    const auth = getAuth();
-    const emailRef = useRef<HTMLInputElement>(null);
-    const [error, setError] = useState<string>('');
-
-    const addAdminHandler = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            if (!emailRef.current?.value) {
-                setError('Please enter an email address');
-                return;
-            }
-            await addAdmin(auth.currentUser?.email as string, emailRef.current.value);
-            emailRef.current.value = ''; // Clear input after successful addition
-            setError('');
-        } catch (error) {
-            if (error instanceof Error) {
-                setError(error.message);
-            }
-        }
-    }
-
-    return (
-        <div className="bg-white p-8 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">Admin Management</h3>
-            <div className="space-y-6">
-                {error && (
-                    <div className="text-red-600 text-sm">{error}</div>
-                )}
-                <form className="flex gap-4" onSubmit={addAdminHandler}>
-                    <input
-                        type="email"
-                        ref={emailRef}
-                        placeholder="Enter admin email"
-                        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button 
-                    type='submit'
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" 
-                        
-                    >
-                        Add Admin
-                    </button>
-                </form>
-
-                <div className="border-t pt-6">
-                    <h4 className="text-sm font-medium text-gray-500 mb-4">Current Admins</h4>
-                    <div className="space-y-2">
-                        
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+import AdminManagement from '../components/AdminManagement';
+import ProfileSettings from '../components/ProfileSettings';
 
 export default function Settings() {
-    const [activeTab, setActiveTab] = useState<'profile' | 'admin'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'admins'>('profile');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const auth = getAuth();
@@ -143,31 +57,29 @@ export default function Settings() {
                     <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                         <button
                             onClick={() => setActiveTab('profile')}
-                            className={`${
+                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm rounded-none outline-none focus:outline-none ${
                                 activeTab === 'profile'
                                     ? 'border-b-indigo-500 rounded-none text-indigo-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
                         >
                             Profile
                         </button>
                         <button
-                            onClick={() => setActiveTab('admin')}
-                            className={`${
-                                activeTab === 'admin'
+                            onClick={() => setActiveTab('admins')}
+                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm rounded-none outline-none focus:outline-none ${
+                                activeTab === 'admins'
                                     ? 'border-b-indigo-500 rounded-none text-indigo-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
                         >
-                            Admin
+                            Admins
                         </button>
                     </nav>
                 </div>
 
-                <div>
                     {activeTab === 'profile' && <ProfileSettings />}
-                    {activeTab === 'admin' && <AdminManagement />}
-                </div>
+                    {activeTab === 'admins' && <AdminManagement />}
             </div>
         </div>
     );

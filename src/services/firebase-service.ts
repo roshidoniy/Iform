@@ -1,7 +1,7 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import firebaseConfig from "../keys/firebaseSDK";
 import { User } from "../types/firebase.types";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -28,6 +28,10 @@ async function addAdmin(ownerEmail: string, adminEmail: string) {
     const ownerRef = doc(db, 'usersDB', ownerEmail);
     const adminDocSnap = await getDoc(adminRef);
 
+    if(adminEmail == ownerEmail){
+        throw new Error("You cannot add yourself as an admin");
+    }
+
     if(adminDocSnap.exists()) {
         await updateDoc(ownerRef, {
             "admins": arrayUnion(adminEmail)
@@ -39,6 +43,43 @@ async function addAdmin(ownerEmail: string, adminEmail: string) {
     else{
         throw new Error("Admin does not exist");
     }
+}
+
+function getAdmins(ownerEmail: string, onUpdate: (admins: string[]) => void, onError?: (error: Error) => void) {
+    const userRef = doc(db, 'usersDB', ownerEmail);
+    
+    return onSnapshot(
+        userRef,
+        (doc) => {
+            if (doc.exists()) {
+                const userData = doc.data();
+                onUpdate(userData.admins || []);
+            } else {
+                onUpdate([]);
+            }
+        },
+        (error) => {
+            console.error("Error fetching admins:", error);
+            if (onError) {
+                onError(error);
+            }
+        }
+    );
+}
+
+async function deleteAdmin(ownerEmail: string, adminEmail: string): Promise<void> {
+        const ownerRef = doc(db, 'usersDB', ownerEmail);
+        const adminRef = doc(db, 'usersDB', adminEmail);
+
+        await updateDoc(ownerRef, {
+            "admins": arrayRemove(adminEmail)
+        })
+
+        await updateDoc(adminRef, {
+            "author_admin": arrayRemove(ownerEmail)
+        })
+
+        
 }
 
 async function signUpUser(userInfo: User) {
@@ -76,11 +117,10 @@ async function continueWithGoogle() {
     }
 }
 
-async function signInWithPassword(email: string, password: string) {
+async function signInWithPassword(email: string, password: string): Promise<void> {
     try {
         const auth = getAuth(app);
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        return userCredential.user;
+        await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
         if(error instanceof FirebaseError){
             console.error("Error signing in with password:", error.code);
@@ -90,4 +130,4 @@ async function signInWithPassword(email: string, password: string) {
 }
 
 
-export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin }
+export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin }
