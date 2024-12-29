@@ -22,7 +22,7 @@ export default function Settings() {
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-gray-600">Loading...</div>
+                    <img src="/Iform_Black.webp" alt="Iform logo" className="w-20 h-20 animate-bounce" />
             </div>
         );
     }

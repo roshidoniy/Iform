@@ -9,6 +9,8 @@ export default function Header() {
     const navigate = useNavigate();
     const user = auth.currentUser;
 
+    
+
     const handleSignOut = async () => {
         try {
             await auth.signOut();
@@ -30,7 +32,7 @@ export default function Header() {
                     <Link to="/" className="flex-shrink-0">
                         <img
                             className="h-8 w-auto"
-                            src="/Iform_black.png"
+                            src="/Iform_Black.webp"
                             alt="Logo"
                         />
                     </Link>
