@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { continueWithGoogle, signInWithPassword } from '../services/firebase-service';
 import { Link, useNavigate } from 'react-router';
 import { getAuth, User } from 'firebase/auth';
 
 export default function Login() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const emailRef = useRef<HTMLInputElement>(null);
+    const passwordRef = useRef<HTMLInputElement>(null);
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +24,7 @@ export default function Login() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await signInWithPassword(email, password);
+            await signInWithPassword(emailRef.current?.value as string, passwordRef.current?.value as string);
         } catch (error){
             if(error instanceof Error){
                 setError(error.message)
@@ -68,11 +68,10 @@ export default function Login() {
                                 id="email"
                                 name="email"
                                 type="email"
+                                ref={emailRef}
                                 required
                                 className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                 placeholder="Email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
                         <div className="relative">
@@ -80,11 +79,10 @@ export default function Login() {
                                 id="password"
                                 name="password"
                                 type={showPassword ? "text" : "password"}
+                                ref={passwordRef}
                                 required
                                 className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                 placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
                             />
                             <button
                                 type="button"

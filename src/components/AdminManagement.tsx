@@ -1,9 +1,11 @@
 import { useRef, useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { addAdmin, deleteAdmin, getAdmins } from '../services/firebase-service';
+import { addAdmin, deleteAdmin } from '../services/firebase-service';
+import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
 
 export default function AdminManagement() {
     const auth = getAuth();
+    const db = getFirestore();
     const emailRef = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<string>('');
     const [admins, setAdmins] = useState<string[]>([]);
@@ -13,13 +15,17 @@ export default function AdminManagement() {
         let unsubscribe: () => void;
 
         if (auth.currentUser?.email) {
-            unsubscribe = getAdmins(
-                auth.currentUser.email,
-                (adminsList) => {
-                    setAdmins(adminsList);
+            const userRef = doc(db, 'usersDB', auth.currentUser.email);
+            unsubscribe = onSnapshot(userRef, 
+                (doc) => {
+                    if (doc.exists()) {
+                        const userData = doc.data();
+                        setAdmins(userData.admins || []);
+                    }
                     setIsLoading(false);
                 },
                 (error) => {
+                    console.error("Error fetching admins:", error);
                     setError(error.message);
                     setIsLoading(false);
                 }
@@ -27,9 +33,11 @@ export default function AdminManagement() {
         }
 
         return () => {
+            if (unsubscribe) {
                 unsubscribe();
+            }
         };
-    }, [auth.currentUser?.email]);
+    }, [auth.currentUser?.email, db]);
 
     const addAdminHandler = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,11 +58,14 @@ export default function AdminManagement() {
 
     const handleDeleteAdmin = async (email: string) => {
         try {
+            setIsLoading(true);
             await deleteAdmin(auth.currentUser?.email as string, email);
         } catch (error) {
             if (error instanceof Error) {
                 setError(error.message);
             }
+        } finally {
+            setIsLoading(false);
         }
     };
 

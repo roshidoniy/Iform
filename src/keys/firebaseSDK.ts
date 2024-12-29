@@ -1,10 +1,10 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyCaSxOMvkYnGSqSNMfjmSjYegMNoVihnkY",
-  authDomain: "iforms00.firebaseapp.com",
-  projectId: "iforms00",
-  storageBucket: "iforms00.firebasestorage.app",
-  messagingSenderId: "748427672477",
-  appId: "1:748427672477:web:3be3c5c4d54974155e4d74"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-export default firebaseConfig
+export default firebaseConfig;
