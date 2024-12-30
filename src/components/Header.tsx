@@ -8,6 +8,7 @@ export default function Header() {
     const auth = getAuth();
     const navigate = useNavigate();
     const user = auth.currentUser;
+    
 
     
 
@@ -22,7 +23,7 @@ export default function Header() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Searching for:', searchQuery);
+        navigate(`/search?q=${searchQuery}`);
     };
 
     return (

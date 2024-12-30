@@ -19,7 +19,7 @@ export default function Settings() {
         return () => unsubscribe();
     }, [auth]);
 
-    if (isLoading) {
+        if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                     <img src="/Iform_Black.webp" alt="Iform logo" className="w-20 h-20 animate-bounce" />

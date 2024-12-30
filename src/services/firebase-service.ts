@@ -16,7 +16,7 @@ async function addUserToDB(email: string) {
         throw new Error("Email already exists");
     }
 
-    await setDoc(userRef, {
+    await setDoc(userRef, { 
         email: email,
         admins: [],
         author_admin: []
