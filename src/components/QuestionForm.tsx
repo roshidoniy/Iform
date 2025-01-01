@@ -1,5 +1,5 @@
-import {  useState } from "react";
-import { Question } from "../types/questions.types";
+import {  useEffect, useState } from "react";
+import { Question } from "../types/types";
 
 const QuestionForm = () => {
     const [questions, setQuestions] = useState<Question[]>([]);
@@ -9,11 +9,14 @@ const QuestionForm = () => {
             id: Date.now(),
             type: "TEXT", 
             question: "",
-            required: false,
             options: []
         };
         setQuestions([...questions, newQuestion]);
     };
+
+    useEffect(() => {        
+        console.log(questions)
+    }, [questions])
 
     const removeQuestion = (id: number) => {
         setQuestions(questions.filter(q => q.id !== id));
@@ -28,15 +31,26 @@ const QuestionForm = () => {
     const addOption = (questionId: number) => {
         setQuestions(questions.map(q => 
             q.id === questionId
-                ? { ...q, options: [...(q.options || []), { id: Date.now(), text: "" }] }
+                ? { ...q, options: [...q.options, ""] }
                 : q
         ));
     };
 
-    const removeOption = (questionId: number, optionId: number) => {
+    const updateOption = (questionId: number, optionIndex: number, newValue: string) => {
+        setQuestions(questions.map(q => {
+            if (q.id === questionId) {
+                const newOptions = [...q.options];
+                newOptions[optionIndex] = newValue;
+                return { ...q, options: newOptions };
+            }
+            return q;
+        }));
+    };
+
+    const removeOption = (questionId: number, optionIndex: number) => {
         setQuestions(questions.map(q => 
             q.id === questionId 
-                ? { ...q, options: q.options?.filter(opt => opt.id !== optionId) }
+                ? { ...q, options: q.options.filter((_, index) => index !== optionIndex) }
                 : q
         ));
     };
@@ -74,39 +88,34 @@ const QuestionForm = () => {
                                     <option key={1} value="TEXT">
                                         Text
                                     </option>
-                                    <option key={1} value="NUMBER">
+                                    <option key={2} value="NUMBER">
                                         Number
                                     </option>
-                                    <option key={2} value="ONE-LINE">
+                                    <option key={3} value="ONE-LINE">
                                         One line
                                     </option>
-                                    <option key={3} value="MULTIPLE_CHOICE">
+                                    <option key={4} value="MULTIPLE_CHOICE">
                                         Multiple Choice
                                     </option>
-                                    <option key={4} value="DATE">
+                                    <option key={5} value="DATE">
                                         Date
                                     </option>
                             </select>
                         </div>
 
                         {(question.type === "ONE_LINE" || question.type === "MULTIPLE_CHOICE") && (
-                            <div className="ml-4 space-y-2">
-                                {question.options?.map((option) => (
-                                    <div key={option.id} className="flex items-center space-x-2">
+                            <div className="ml-4 space-y-2 mt-4">
+                                {question.options.map((option, optionIndex) => (
+                                    <div key={optionIndex} className="flex items-center space-x-2">
                                         <input
                                             type="text"
-                                            value={option.text}
-                                            onChange={(e) => {
-                                                const newOptions = question.options?.map(opt =>
-                                                    opt.id === option.id ? { ...opt, text: e.target.value } : opt
-                                                );
-                                                updateQuestion(question.id, { options: newOptions });
-                                            }}
+                                            value={option}
+                                            onChange={(e) => updateOption(question.id, optionIndex, e.target.value)}
                                             placeholder="Option text"
                                             className="flex-1 px-3 py-1 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
                                         />
                                         <button
-                                            onClick={() => removeOption(question.id, option.id)}
+                                            onClick={() => removeOption(question.id, optionIndex)}
                                             className="p-1 text-red-600 hover:text-red-800"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -125,15 +134,6 @@ const QuestionForm = () => {
                         )}
 
                         <div className="flex justify-between items-center mt-4">
-                            <label className="flex items-center space-x-2">
-                                <input
-                                    type="checkbox"
-                                    checked={question.required}
-                                    onChange={(e) => updateQuestion(question.id, { required: e.target.checked })}
-                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-sm text-gray-600">Required</span>
-                            </label>
                             <button
                                 onClick={() => removeQuestion(question.id)}
                                 className="text-red-600 hover:text-red-800"
