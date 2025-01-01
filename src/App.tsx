@@ -6,8 +6,8 @@ import Header from './components/Header';
 import Settings from "./pages/Settings";
 import SearchResults from "./pages/SearchResults";
 import { AuthProvider } from './context/AuthContext';
-import TemplateRouter from "./pages/templateRouter";
 import QuestionForm from "./components/QuestionForm";
+import TemplateRouter from "./pages/TemplateRouter";
 
 function App() {
     return (
