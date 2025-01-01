@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router';
+import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const { user, loading } = useAuth();
     const auth = getAuth();
     const navigate = useNavigate();
-    const user = auth.currentUser;
-    
-
-    
+    console.log("Header render")
 
     const handleSignOut = async () => {
         try {
@@ -63,23 +62,29 @@ export default function Header() {
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className="flex items-center focus:outline-none"
                         >
-                            {user?.photoURL ? (
-                                <img
-                                    className="h-8 w-8 rounded-full object-cover"
-                                    src={user.photoURL}
-                                    alt="User avatar"
-                                />
+                            {loading ? (
+                                <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
                             ) : (
-                                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-                                    <span className="text-white text-sm">
-                                        {user?.email?.charAt(0).toUpperCase() || 'U'}
-                                    </span>
+                                <div className="flex items-center">
+                                    {user?.photoURL ? (
+                                        <img
+                                            className="h-8 w-8 rounded-full object-cover"
+                                            src={user.photoURL}
+                                            alt="User avatar"
+                                        />
+                                    ) : (
+                                        <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
+                                            <span className="text-white text-sm">
+                                                {user?.email?.charAt(0).toUpperCase() || 'U'}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </button>
-
-                        {isDropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                            {/* display none when IsdropdownOpen is false */}
+                            
+                            <div className={`${isDropdownOpen ? 'block' : 'hidden'} absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5`}>
                                 <div className="py-1">
                                     <div className="px-4 py-2 text-sm">
                                         <p className="font-medium">{user?.displayName || 'User'}</p>
@@ -107,7 +112,6 @@ export default function Header() {
                                     </button>
                                 </div>
                             </div>
-                        )}
                     </div>
                 </div>
             </div>

@@ -5,18 +5,25 @@ import { Route, Routes } from "react-router"
 import Header from './components/Header';
 import Settings from "./pages/Settings";
 import SearchResults from "./pages/SearchResults";
+import { AuthProvider } from './context/AuthContext';
+import TemplateRouter from "./pages/templateRouter";
 
 function App() {
     return (
         <div>
+            <AuthProvider>
             <Header />
             <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/search" element={<SearchResults /> } />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route index element={<Home />} />
+                <Route path="template/:tid" element={<TemplateRouter />} />
+                <Route path="template/:tid/edit" element={<div>Edit</div>} />
+                <Route path="template/:tid/view" element={<div>View</div>} />
+                <Route path="search" element={<SearchResults /> } />
+                <Route path="signup" element={<SignUp />} />
+                <Route path="login" element={<Login />} />
+                <Route path="settings" element={<Settings />} />
             </Routes>
+        </AuthProvider>
         </div>
     );
 }

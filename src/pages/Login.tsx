@@ -21,6 +21,7 @@ export default function Login() {
         return () => unsubscribe();
     }, [auth, navigate]);
 
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {

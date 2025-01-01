@@ -1,43 +1,31 @@
 import { useRef, useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
-import { addAdmin, deleteAdmin } from '../services/firebase-service';
-import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
+import { addAdmin, deleteAdmin, getAdmins } from '../services/firebase-service';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminManagement() {
-    const auth = getAuth();
-    const db = getFirestore();
     const emailRef = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<string>('');
     const [admins, setAdmins] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-
+    const {user} = useAuth()
+    
     useEffect(() => {
-        let unsubscribe: () => void;
-
-        if (auth.currentUser?.email) {
-            const userRef = doc(db, 'usersDB', auth.currentUser.email);
-            unsubscribe = onSnapshot(userRef, 
-                (doc) => {
-                    if (doc.exists()) {
-                        const userData = doc.data();
-                        setAdmins(userData.admins || []);
-                    }
+        if (user?.email) {
+            const unsubscribe = getAdmins(user.email,
+                (adminsList) => {
+                    setAdmins(adminsList);
                     setIsLoading(false);
                 },
                 (error) => {
-                    console.error("Error fetching admins:", error);
                     setError(error.message);
                     setIsLoading(false);
                 }
             );
-        }
-
-        return () => {
-            if (unsubscribe) {
+            return () => {
                 unsubscribe();
-            }
-        };
-    }, [auth.currentUser?.email, db]);
+            };
+        }
+    }, [user?.email]);
 
     const addAdminHandler = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,7 +34,7 @@ export default function AdminManagement() {
                 setError('Please enter an email address');
                 return;
             }
-            await addAdmin(auth.currentUser?.email as string, emailRef.current.value);
+            await addAdmin(user?.email as string, emailRef.current.value);
             emailRef.current.value = '';
             setError('');
         } catch (error) {
@@ -59,7 +47,7 @@ export default function AdminManagement() {
     const handleDeleteAdmin = async (email: string) => {
         try {
             setIsLoading(true);
-            await deleteAdmin(auth.currentUser?.email as string, email);
+            await deleteAdmin(user?.email as string, email);
         } catch (error) {
             if (error instanceof Error) {
                 setError(error.message);

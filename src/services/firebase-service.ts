@@ -1,16 +1,69 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import firebaseConfig from "../keys/firebaseSDK";
-import { User } from "../types/firebase.types";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from "firebase/firestore";
+import { Template, User } from "../types/types";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, addDoc, collection, serverTimestamp, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+async function createTemplate(creatorEmail: string): Promise<string> {
+    const templateCol = collection(db, "templatesDB");
+    const userRef = doc(db, "usersDB", creatorEmail)
 
-async function addUserToDB(email: string) {
+    if(!creatorEmail){
+        throw new Error("User is not Logged in")
+    }
+
+    const templateInitialData = {
+        title: "New Template",
+        creator: auth.currentUser?.email,
+        description: "",
+        image_url: "",
+        questions: [],
+        likes: 0,
+        createdAt: serverTimestamp(),
+    }
+
+    const newTemplate = await addDoc(templateCol, templateInitialData)
+    await updateDoc(userRef, {
+        templatesID: arrayUnion(newTemplate.id)
+    })
+
+    return newTemplate.id
+}
+
+async function deleteTemplate(creatorEmail: string, templateID: string) {
+    const templateCol = collection(db, "templatesDB");
+    const userRef = doc(db, "usersDB", creatorEmail)
+    await updateDoc(userRef, {
+        templatesID: arrayRemove(templateID)
+    })
+    await deleteDoc(doc(templateCol, templateID))
+}
+
+async function getTemplates(creatorEmail: string) {
+    const templateCol = collection(db, "templatesDB");
+    const templateQuery = query(templateCol, where("creator", "==", creatorEmail))
+    const snapshot = await getDocs(templateQuery)
+    return snapshot.docs.map((doc): Template => {
+        console.log(doc.id, doc.data())
+        return {
+            id: doc.id,
+            creator: doc.data().creator,
+            title: doc.data().title,
+            description: doc.data().description,
+            image_url: doc.data().image_url,
+            questions: doc.data().questions,
+            likes: doc.data().likes,
+            createdAt: doc.data().createdAt,
+        }
+    })
+}
+
+async function addUserToDB(email: string): Promise<void> {
     const userRef = doc(db, 'usersDB', email);
-    const docSnap = await getDoc(userRef);
+    const docSnap = await getDoc(userRef)
     
     if(docSnap.exists()) {
         throw new Error("Email already exists");
@@ -19,16 +72,20 @@ async function addUserToDB(email: string) {
     await setDoc(userRef, { 
         email: email,
         admins: [],
-        author_admin: []
+        author_admin: [],
+        templatesID: [],
+        liked: [],
+        commented: [],
+        createdAt: serverTimestamp(),
     });
 }
 
-async function addAdmin(ownerEmail: string, adminEmail: string) {
+async function addAdmin(creatorEmail: string, adminEmail: string): Promise<void> {
     const adminRef = doc(db, 'usersDB', adminEmail);
-    const ownerRef = doc(db, 'usersDB', ownerEmail);
+    const ownerRef = doc(db, 'usersDB', creatorEmail);
     const adminDocSnap = await getDoc(adminRef);
 
-    if(adminEmail == ownerEmail){
+    if(adminEmail == creatorEmail){
         throw new Error("You cannot add yourself as an admin");
     }
 
@@ -37,7 +94,7 @@ async function addAdmin(ownerEmail: string, adminEmail: string) {
             "admins": arrayUnion(adminEmail)
         })
         await updateDoc(adminRef, {
-            "author_admin": arrayUnion(ownerEmail)
+            "author_admin": arrayUnion(creatorEmail)
         })
     }
     else{
@@ -129,5 +186,4 @@ async function signInWithPassword(email: string, password: string): Promise<void
     }
 }
 
-
-export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin }
+export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, deleteTemplate }
