@@ -27,11 +27,13 @@ const Home = () => {
         }
         await deleteTemplate(user?.email, templateID)
         setTemplates(templates.filter(template => template.id !== templateID))
-        
     }
 
-    
+    const goToEditForm = (tid: string) => {
+        navigate(`/template/${tid}/edit`);
+    };
 
+    
     useEffect(() => {
         const fetchTemplates = async () => {
             if(!user?.email){
@@ -66,12 +68,6 @@ const Home = () => {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Title
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Created
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Responses
-                            </th>
                             <th scope="col" className="relative px-6 py-3">
                                 <span className="sr-only">Actions</span>
                             </th>
@@ -79,16 +75,13 @@ const Home = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200 w-full">
                         {templates.map((template, index) => (
-                            <tr key={index} className="hover:bg-gray-50 w-full">
-                                <td className="px-6 py-4 whitespace-nowrap">
+                            <tr key={index} className="hover:bg-gray-50 w-full" >
+                                <td className="px-6 py-4 whitespace-nowrap hover:underline cursor-pointer" onClick={() => goToEditForm(template.id as string)}>
                                     <div className="text-sm font-medium text-gray-900">{template.title}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-500">{template.description}</div>
-                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button className="text-blue-600 hover:text-blue-900 mr-4">Edit</button>
-                                    <button className="text-red-600 hover:text-red-900" onClick={() => deleteTemplateHandler(template.id)}>Delete</button>
+                                    <button className="text-blue-600 hover:text-blue-900 mr-4" onClick={() => goToEditForm(template.id as string)}>Edit</button>
+                                    <button className="text-red-600 hover:text-red-900" onClick={() => deleteTemplateHandler(template.id as string)}>Delete</button>
                                 </td>
                             </tr>
                         ))}

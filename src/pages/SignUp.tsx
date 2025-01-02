@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { signUpUser, continueWithGoogle } from '../services/firebase-service';
 import { Link, useNavigate } from 'react-router';
-import { getAuth } from 'firebase/auth';
+import { getAuth, User } from 'firebase/auth';
 
 export default function SignUp() {
     const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ export default function SignUp() {
     const auth = getAuth();
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user: any) => {
+        const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
             if (user) {
                 navigate('/');
             }

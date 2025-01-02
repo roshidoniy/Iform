@@ -1,24 +1,56 @@
 import {  useEffect, useState } from "react";
-import { Question, Template } from "../types/types";
+import { Question, Template } from "../../types/types";
+import { useParams } from "react-router";
+import { getTemplate, setTemplate } from "../../services/firebase-service";
+import { useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
 
-const QuestionForm = () => {
-    const [formData, setFormData] = useState<Partial<Template>>({
-        title: "",
-        description: "",
-        questions: [],
-        likes: 0,
-        image_url: ""
-    });
-
+const ManageForm = () => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<Partial<Template>>();
     const [questions, setQuestions] = useState<Question[]>([]);
 
-    // Update formData when questions change
+    const {tid} = useParams();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+
+
     useEffect(() => {
-        setFormData(prev => ({ ...prev, questions }));
-    }, [questions]);
+        async function templateFetch() {
+            setIsLoading(true);
+            try {
+                const template = await getTemplate(tid as string);
+                if (template?.creator !== user?.email) {
+                    return navigate(`/template/${tid}/view`);
+                }
+                if (template) {
+                    setFormData(template);
+                    setQuestions(template.questions);
+                }
+            } catch (error) {
+                console.error("Error fetching template:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        templateFetch();
+    }, [tid, user, navigate]);
+
+    if (isLoading) {
+        return (
+            <div className="max-w-4xl mx-auto p-6 flex items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        );
+    }
 
     const handleFormDataChange = (field: keyof Template, value: string | number) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const setTemplateHandler = async () => {
+        await setTemplate({...formData, questions: questions} as Template);
+        navigate(`/`);
     };
 
     const addQuestion = () => {
@@ -31,10 +63,6 @@ const QuestionForm = () => {
         setQuestions([...questions, newQuestion]);
     };
 
-    useEffect(() => {        
-        console.log(questions)
-    }, [questions])
-    
     const removeQuestion = (id: number) => {
         setQuestions(questions.filter(q => q.id !== id));
     };
@@ -76,7 +104,7 @@ const QuestionForm = () => {
         <div className="max-w-4xl mx-auto p-6">
             {/* Header Section */}
             <div className="mb-12 text-center">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Form</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Form: {tid}</h1>
                 <p className="text-gray-600">Design your form by adding questions and customizing settings</p>
             </div>
 
@@ -91,7 +119,7 @@ const QuestionForm = () => {
                         <input
                             id="title"
                             type="text"
-                            value={formData.title}
+                            value={formData?.title}
                             onChange={(e) => handleFormDataChange("title", e.target.value)}
                             placeholder="Enter a descriptive title"
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -104,7 +132,7 @@ const QuestionForm = () => {
                         </label>
                         <textarea
                             id="description"
-                            value={formData.description}
+                            value={formData?.description}
                             onChange={(e) => handleFormDataChange("description", e.target.value)}
                             placeholder="Provide additional context about your form"
                             rows={3}
@@ -119,12 +147,12 @@ const QuestionForm = () => {
                         <input
                             id="image_url"
                             type="url"
-                            value={formData.image_url}
+                            value={formData?.image_url}
                             onChange={(e) => handleFormDataChange("image_url", e.target.value)}
                             placeholder="https://example.com/image.jpg"
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                         />
-                        {formData.image_url && (
+                        {formData?.image_url && (
                             <div className="mt-2 rounded-lg overflow-hidden border border-gray-200">
                                 <img 
                                     src={formData.image_url} 
@@ -174,15 +202,15 @@ const QuestionForm = () => {
                                         className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all"
                                     >
                                         <option value="TEXT">Text</option>
-                                        <option value="NUMBER">Number</option>
-                                        <option value="ONE-LINE">One line</option>
+                                        <option value="ONE_LINE">Single Line</option>
+                                        <option value="CHECKBOX">Checkbox</option>
                                         <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-                                        <option value="DATE">Date</option>
+                                        <option value="DROPDOWN">Dropdown</option>
                                     </select>
                                 </div>
                             </div>
 
-                            {(question.type === "ONE_LINE" || question.type === "MULTIPLE_CHOICE") && (
+                            {(question.type === "CHECKBOX" || question.type === "MULTIPLE_CHOICE" || question.type === "DROPDOWN") && (
                                 <div className="ml-10 space-y-3">
                                     {question.options.map((option, optionIndex) => (
                                         <div key={optionIndex} className="flex items-center gap-2">
@@ -255,11 +283,10 @@ const QuestionForm = () => {
                 </div>
             </div>
 
-            {/* Save Button */}
             {questions.length > 0 && (
                 <div className="mt-8 flex justify-end">
                     <button
-                        onClick={() => console.log("Form Data:", { ...formData, questions })}
+                        onClick={setTemplateHandler}
                         className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -273,4 +300,4 @@ const QuestionForm = () => {
     );
 };
 
-export default QuestionForm;
+export default ManageForm;

@@ -5,6 +5,15 @@ export interface User {
     password: string;
 }
 
+export interface UserData {
+    email: string;
+    templatesID: string[];
+    admins: string[];
+    author_admin: string[];
+    liked: string[];
+    commented: string[];
+}
+
 export interface Template {
     id: string;
     title: string;
@@ -18,7 +27,7 @@ export interface Template {
 
 export interface Question {
     id: number;
-    type: "TEXT" | "ONE_LINE" | "MULTIPLE_CHOICE" | "DATE" | "NUMBER";
+    type: "ONE_LINE" | "TEXT" | "CHECKBOX" | "MULTIPLE_CHOICE" | "DROPDOWN";
     question: string;
     options: string[]
 }

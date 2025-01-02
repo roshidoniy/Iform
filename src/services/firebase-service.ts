@@ -1,19 +1,19 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import firebaseConfig from "../keys/firebaseSDK";
-import { Template, User } from "../types/types";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, addDoc, collection, serverTimestamp, query, where, getDocs, deleteDoc } from "firebase/firestore";
+import { Template, User, UserData } from "../types/types";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, collection, serverTimestamp, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
 async function createTemplate(creatorEmail: string): Promise<string> {
-    const templateCol = collection(db, "templatesDB");
+    // const templateCol = collection(db, "templatesDB");
     const userRef = doc(db, "usersDB", creatorEmail)
 
-    if(!creatorEmail){
-        throw new Error("User is not Logged in")
-    }
+    // if(!creatorEmail){
+    //     throw new Error("User is not Logged in")
+    // }
 
     const templateInitialData = {
         title: "New Template",
@@ -25,12 +25,17 @@ async function createTemplate(creatorEmail: string): Promise<string> {
         createdAt: serverTimestamp(),
     }
 
-    const newTemplate = await addDoc(templateCol, templateInitialData)
+    // const newTemplate = await addDoc(templateCol, templateInitialData)
+
+    const templateRef = doc(collection(db, "templatesDB"));
+
+    await setDoc(templateRef, {...templateInitialData, id: templateRef.id})
+
     await updateDoc(userRef, {
-        templatesID: arrayUnion(newTemplate.id)
+        templatesID: arrayUnion(templateRef.id)
     })
 
-    return newTemplate.id
+    return templateRef.id
 }
 
 async function deleteTemplate(creatorEmail: string, templateID: string) {
@@ -47,18 +52,39 @@ async function getTemplates(creatorEmail: string) {
     const templateQuery = query(templateCol, where("creator", "==", creatorEmail))
     const snapshot = await getDocs(templateQuery)
     return snapshot.docs.map((doc): Template => {
-        console.log(doc.id, doc.data())
         return {
             id: doc.id,
-            creator: doc.data().creator,
             title: doc.data().title,
             description: doc.data().description,
             image_url: doc.data().image_url,
             questions: doc.data().questions,
+            creator: doc.data().creator,
             likes: doc.data().likes,
             createdAt: doc.data().createdAt,
         }
     })
+}
+
+async function getTemplate(tid: string): Promise<Template | undefined> {
+    const templateRef = doc(db, "templatesDB", tid);
+    const docSnap = await getDoc(templateRef);
+
+    if (docSnap.exists()) {
+        return {
+            id: docSnap.id,
+            title: docSnap.data().title,
+            description: docSnap.data().description,
+            image_url: docSnap.data().image_url,
+            questions: docSnap.data().questions,
+            creator: docSnap.data().creator,
+            likes: docSnap.data().likes,
+            createdAt: docSnap.data().createdAt,
+        }
+    }
+}
+
+async function setTemplate(data: Template): Promise<void> {
+    setDoc(doc(db, "templatesDB", data.id), data)
 }
 
 async function addUserToDB(email: string): Promise<void> {
@@ -186,4 +212,20 @@ async function signInWithPassword(email: string, password: string): Promise<void
     }
 }
 
-export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, deleteTemplate }
+async function getUserData(email: string): Promise<UserData | undefined> {
+    const userRef = doc(db, "usersDB", email);
+    const docSnap = await getDoc(userRef);
+
+    if (docSnap.exists()) {
+        return {
+            email: docSnap.data().email,
+            templatesID: docSnap.data().templatesID,
+            admins: docSnap.data().admins,
+            author_admin: docSnap.data().author_admin,
+            liked: docSnap.data().liked,
+            commented: docSnap.data().commented,
+        }
+    }
+}
+
+export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, getTemplate, getUserData, deleteTemplate, setTemplate }

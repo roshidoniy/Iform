@@ -6,8 +6,9 @@ import Header from './components/Header';
 import Settings from "./pages/Settings";
 import SearchResults from "./pages/SearchResults";
 import { AuthProvider } from './context/AuthContext';
-import QuestionForm from "./components/QuestionForm";
-import TemplateRouter from "./pages/TemplateRouter";
+import ManageForm from "./pages/templatePages/ManageForm";
+import TemplateRouter from "./pages/templatePages/TemplateRouter";
+import ViewForm from "./pages/templatePages/ViewForm";
 
 function App() {
     return (
@@ -17,12 +18,13 @@ function App() {
             <Routes>
                 <Route index element={<Home />} />
                 <Route path="template/:tid" element={<TemplateRouter />} />
-                <Route path="template/:tid/edit" element={<QuestionForm />} />
-                <Route path="template/:tid/view" element={<div>View</div>} />
+                <Route path="template/:tid/edit" element={<ManageForm />} />
+                <Route path="template/:tid/view" element={<ViewForm />} />
                 <Route path="search" element={<SearchResults /> } />
                 <Route path="signup" element={<SignUp />} />
                 <Route path="login" element={<Login />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="*" element={<div>404</div>} />
             </Routes>
         </AuthProvider>
         </div>
