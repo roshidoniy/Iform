@@ -1,14 +1,8 @@
 import { useEffect, useState, useRef } from "react";
-import { Template } from "../../types/types";
+import type { FormAnswer, Template } from "../../types/types";
 import { useParams, Link } from "react-router";
 import { getTemplate } from "../../services/firebase-service";
 import { useAuth } from "../../context/AuthContext";
-
-interface FormAnswer {
-    questionId: string;
-    question: string;
-    answer: string | string[];
-}
 
 const ViewForm = () => {
     const [template, setTemplate] = useState<Template | null>(null);
@@ -26,6 +20,9 @@ const ViewForm = () => {
                 const templateData = await getTemplate(tid);
                 if (templateData) {
                     setTemplate(templateData);
+                    templateData.questions.forEach((q) => {
+                        answersRef.current.push({questionId: q.id, question: q.question, answer: "" })
+                    })
                 } else {
                     setError("Template not found");
                 }
@@ -39,20 +36,16 @@ const ViewForm = () => {
         fetchTemplate();
     }, [tid]);
 
-    const handleAnswerChange = (questionId: string, question: string, value: string | string[]) => {
+    const handleAnswerChange = (questionId: number, question: string, value: string | string[]) => {
         if (!user) return;
         
         const existingAnswerIndex = answersRef.current.findIndex(a => a.questionId === questionId);
         const newAnswer = { questionId, question, answer: value };
         
-        if (existingAnswerIndex >= 0) {
-            answersRef.current[existingAnswerIndex] = newAnswer;
-        } else {
-            answersRef.current.push(newAnswer);
-        }
+        answersRef.current[existingAnswerIndex] = newAnswer;
     }
 
-    const handleCheckboxChange = (questionId: string, question: string, option: string, checked: boolean) => {
+    const handleCheckboxChange = (questionId: number, question: string, option: string, checked: boolean) => {
         if (!user) return;
         
         const existingAnswer = answersRef.current.find(a => a.questionId === questionId);
@@ -68,13 +61,17 @@ const ViewForm = () => {
         handleAnswerChange(questionId, question, newValues);
     };
 
-    const getAnswerValue = (questionId: string): string | string[] => {
-        const answer = answersRef.current.find(a => a.questionId === questionId);
-        return answer?.answer || "";
-    }
-
     const handleSubmit = () => {
         if (!user) return;
+        answersRef.current.forEach((answer) => {
+            if (answer.answer.length === 0) {
+                console.log(answer.answer.length);
+                
+                setError("Please fill in all the required fields");
+                return;
+            }
+        });
+
         console.log("Submitting answers:", answersRef.current);
         // Add submission logic here
     };
@@ -152,8 +149,7 @@ const ViewForm = () => {
                                 rows={3}
                                 placeholder="Your answer"
                                 disabled={!user}
-                                defaultValue={getAnswerValue(question.id.toString()) as string}
-                                onChange={(e) => handleAnswerChange(question.id.toString(), question.question, e.target.value)}
+                                onChange={(e) => handleAnswerChange(question.id, question.question, e.target.value)}
                             />
                         )}
 
@@ -163,8 +159,7 @@ const ViewForm = () => {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Your answer"
                                 disabled={!user}
-                                defaultValue={getAnswerValue(question.id.toString()) as string}
-                                onChange={(e) => handleAnswerChange(question.id.toString(), question.question, e.target.value)}
+                                onChange={(e) => handleAnswerChange(question.id, question.question, e.target.value)}
                             />
                         )}
 
@@ -176,8 +171,7 @@ const ViewForm = () => {
                                             type="checkbox" 
                                             className="form-checkbox h-5 w-5 text-blue-600"
                                             disabled={!user}
-                                            defaultChecked={(getAnswerValue(question.id.toString()) as string[] || []).includes(option)}
-                                            onChange={(e) => handleCheckboxChange(question.id.toString(), question.question, option, e.target.checked)}
+                                            onChange={(e) => handleCheckboxChange(question.id, question.question, option, e.target.checked)}
                                         />
                                         <span className="text-gray-700">{option}</span>
                                     </label>
@@ -194,8 +188,7 @@ const ViewForm = () => {
                                             name={`question-${question.id}`}
                                             className="form-radio h-5 w-5 text-blue-600"
                                             disabled={!user}
-                                            defaultChecked={getAnswerValue(question.id.toString()) === option}
-                                            onChange={() => handleAnswerChange(question.id.toString(), question.question, option)}
+                                            onChange={() => handleAnswerChange(question.id, question.question, option)}
                                         />
                                         <span className="text-gray-700">{option}</span>
                                     </label>
@@ -207,8 +200,7 @@ const ViewForm = () => {
                             <select 
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                 disabled={!user}
-                                defaultValue={getAnswerValue(question.id.toString()) as string}
-                                onChange={(e) => handleAnswerChange(question.id.toString(), question.question, e.target.value)}
+                                onChange={(e) => handleAnswerChange(question.id, question.question, e.target.value)}
                             >
                                 <option value="">Select an option</option>
                                 {question.options.map((option, optionIndex) => (

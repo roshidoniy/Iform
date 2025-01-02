@@ -1,4 +1,4 @@
-import {  useLayoutEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import { Question, Template } from "../../types/types";
 import { useParams } from "react-router";
 import { getTemplate, setTemplate } from "../../services/firebase-service";
@@ -16,7 +16,7 @@ const ManageForm = () => {
 
     console.log("RENDER");
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         async function templateFetch() {
             setIsLoading(true);
             console.log("BEFORE LOAD")
@@ -107,13 +107,11 @@ const ManageForm = () => {
 
     return (
         <div className="max-w-4xl mx-auto p-6">
-            {/* Header Section */}
             <div className="mb-12 text-center">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Form: {tid}</h1>
                 <p className="text-gray-600">Design your form by adding questions and customizing settings</p>
             </div>
 
-            {/* Form Metadata Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Form Details</h2>
                 <div className="space-y-6">

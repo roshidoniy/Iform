@@ -1,11 +1,23 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import firebaseConfig from "../keys/firebaseSDK";
-import { Template, User } from "../types/types";
+import { FormAnswer, Template, User } from "../types/types";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, collection, serverTimestamp, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+async function submitForm(templateID: string, email: string, answer: FormAnswer[]): Promise<void> {
+    const templateRef = doc(db, "templatesDB", templateID);
+    const userRef = doc(db, "usersDB", email);
+    await updateDoc(templateRef, {
+        answers: arrayUnion(answer)
+    })
+
+    await updateDoc(userRef, {
+        answers: arrayUnion(answer)
+    })
+}
 
 async function createTemplate(creatorEmail: string): Promise<string> {
     const userRef = doc(db, "usersDB", creatorEmail)
@@ -205,4 +217,4 @@ async function signInWithPassword(email: string, password: string): Promise<void
     }
 }
 
-export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, getTemplate, deleteTemplate, setTemplate }
+export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, getTemplate, deleteTemplate, setTemplate, submitForm }

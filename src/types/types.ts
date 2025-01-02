@@ -31,3 +31,9 @@ export interface Question {
     question: string;
     options: string[]
 }
+
+export interface FormAnswer {
+    questionId: number;
+    question: string;
+    answer: string | string[];
+}
