@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Template } from "../../types/types";
 import { useParams, Link } from "react-router";
 import { getTemplate } from "../../services/firebase-service";
 import { useAuth } from "../../context/AuthContext";
+
+interface FormAnswer {
+    questionId: string;
+    question: string;
+    answer: string | string[];
+}
 
 const ViewForm = () => {
     const [template, setTemplate] = useState<Template | null>(null);
@@ -10,7 +16,7 @@ const ViewForm = () => {
     const [error, setError] = useState<string>("");
     const { tid } = useParams();
     const { user } = useAuth();
-    const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
+    const answersRef = useRef<FormAnswer[]>([]);
 
     useEffect(() => {
         async function fetchTemplate() {
@@ -33,67 +39,71 @@ const ViewForm = () => {
         fetchTemplate();
     }, [tid]);
 
-    useEffect(() => {
-        console.log(answers)
-    }, [answers])
-
-    const handleAnswerChange = (questionId: number, value: string | string[]) => {
+    const handleAnswerChange = (questionId: string, question: string, value: string | string[]) => {
         if (!user) return;
-        setAnswers(prev => ({
-            ...prev,
-            [questionId]: value
-        }));
-    };
-
-    const handleCheckboxChange = (questionId: number, option: string, checked: boolean) => {
-        if (!user) return;
-        const currentAnswers = answers[questionId] as string[] || [];
-        let newAnswers: string[];
         
-        if (checked) {
-            newAnswers = [...currentAnswers, option];
+        const existingAnswerIndex = answersRef.current.findIndex(a => a.questionId === questionId);
+        const newAnswer = { questionId, question, answer: value };
+        
+        if (existingAnswerIndex >= 0) {
+            answersRef.current[existingAnswerIndex] = newAnswer;
         } else {
-            newAnswers = currentAnswers.filter(item => item !== option);
+            answersRef.current.push(newAnswer);
+        }
+    }
+
+    const handleCheckboxChange = (questionId: string, question: string, option: string, checked: boolean) => {
+        if (!user) return;
+        
+        const existingAnswer = answersRef.current.find(a => a.questionId === questionId);
+        const currentValues = (existingAnswer?.answer as string[]) || [];
+        
+        let newValues: string[];
+        if (checked) {
+            newValues = [...currentValues, option];
+        } else {
+            newValues = currentValues.filter(v => v !== option);
         }
 
-        handleAnswerChange(questionId, newAnswers);
+        handleAnswerChange(questionId, question, newValues);
     };
+
+    const getAnswerValue = (questionId: string): string | string[] => {
+        const answer = answersRef.current.find(a => a.questionId === questionId);
+        return answer?.answer || "";
+    }
 
     const handleSubmit = () => {
         if (!user) return;
-        console.log("Submitting answers:", answers);
+        console.log("Submitting answers:", answersRef.current);
         // Add submission logic here
     };
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-        );
-    }
+    console.log("Render")
 
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
-                    <p className="text-gray-600">{error}</p>
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+    );
 
-    if (!template) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Not Found</h2>
-                    <p className="text-gray-600">The requested template could not be found.</p>
-                </div>
+    if (error) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
+                <p className="text-gray-600">{error}</p>
             </div>
-        );
-    }
+        </div>
+    );
+
+    if (!template) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Not Found</h2>
+                <p className="text-gray-600">The requested template could not be found.</p>
+            </div>
+        </div>
+    );
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -109,10 +119,9 @@ const ViewForm = () => {
                     </div>
                 </div>
             )}
-
-            {/* Header */}
+    
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{template.title}</h1>
+                <h1 className="text-5xl text-center font-bold text-gray-900 mb-3">{template.title}</h1>
                 {template.description && (
                     <p className="text-gray-600">{template.description}</p>
                 )}
@@ -125,7 +134,6 @@ const ViewForm = () => {
                 )}
             </div>
 
-            {/* Questions */}
             <div className="space-y-6">
                 {template.questions.map((question, index) => (
                     <div key={question.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -138,15 +146,14 @@ const ViewForm = () => {
                             </span>
                         </div>
 
-                        {/* Answer Input based on question type */}
                         {question.type === "TEXT" && (
                             <textarea
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 rows={3}
                                 placeholder="Your answer"
                                 disabled={!user}
-                                value={answers[question.id] as string || ""}
-                                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                defaultValue={getAnswerValue(question.id.toString()) as string}
+                                onChange={(e) => handleAnswerChange(question.id.toString(), question.question, e.target.value)}
                             />
                         )}
 
@@ -156,8 +163,8 @@ const ViewForm = () => {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Your answer"
                                 disabled={!user}
-                                value={answers[question.id] as string || ""}
-                                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                defaultValue={getAnswerValue(question.id.toString()) as string}
+                                onChange={(e) => handleAnswerChange(question.id.toString(), question.question, e.target.value)}
                             />
                         )}
 
@@ -169,8 +176,8 @@ const ViewForm = () => {
                                             type="checkbox" 
                                             className="form-checkbox h-5 w-5 text-blue-600"
                                             disabled={!user}
-                                            checked={(answers[question.id] as string[] || []).includes(option)}
-                                            onChange={(e) => handleCheckboxChange(question.id, option, e.target.checked)}
+                                            defaultChecked={(getAnswerValue(question.id.toString()) as string[] || []).includes(option)}
+                                            onChange={(e) => handleCheckboxChange(question.id.toString(), question.question, option, e.target.checked)}
                                         />
                                         <span className="text-gray-700">{option}</span>
                                     </label>
@@ -187,8 +194,8 @@ const ViewForm = () => {
                                             name={`question-${question.id}`}
                                             className="form-radio h-5 w-5 text-blue-600"
                                             disabled={!user}
-                                            checked={answers[question.id] === option}
-                                            onChange={() => handleAnswerChange(question.id, option)}
+                                            defaultChecked={getAnswerValue(question.id.toString()) === option}
+                                            onChange={() => handleAnswerChange(question.id.toString(), question.question, option)}
                                         />
                                         <span className="text-gray-700">{option}</span>
                                     </label>
@@ -200,8 +207,8 @@ const ViewForm = () => {
                             <select 
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                 disabled={!user}
-                                value={answers[question.id] as string || ""}
-                                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                defaultValue={getAnswerValue(question.id.toString()) as string}
+                                onChange={(e) => handleAnswerChange(question.id.toString(), question.question, e.target.value)}
                             >
                                 <option value="">Select an option</option>
                                 {question.options.map((option, optionIndex) => (
@@ -215,7 +222,6 @@ const ViewForm = () => {
                 ))}
             </div>
 
-            {/* Submit Button */}
             <div className="mt-8 flex justify-end">
                 {user ? (
                     <button 

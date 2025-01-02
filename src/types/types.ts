@@ -5,14 +5,14 @@ export interface User {
     password: string;
 }
 
-export interface UserData {
-    email: string;
-    templatesID: string[];
-    admins: string[];
-    author_admin: string[];
-    liked: string[];
-    commented: string[];
-}
+// export interface UserData {
+//     email: string;
+//     templatesID: string[];
+//     admins: string[];
+//     author_admin: string[];
+//     liked: string[];
+//     commented: string[];
+// }
 
 export interface Template {
     id: string;

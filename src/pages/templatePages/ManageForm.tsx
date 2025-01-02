@@ -1,4 +1,4 @@
-import {  useEffect, useState } from "react";
+import {  useLayoutEffect, useState } from "react";
 import { Question, Template } from "../../types/types";
 import { useParams } from "react-router";
 import { getTemplate, setTemplate } from "../../services/firebase-service";
@@ -12,12 +12,17 @@ const ManageForm = () => {
 
     const {tid} = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
 
+    console.log("RENDER");
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         async function templateFetch() {
             setIsLoading(true);
+            console.log("BEFORE LOAD")
+            if (loading) return
+            console.log("After LOAD")
+
             try {
                 const template = await getTemplate(tid as string);
                 if (template?.creator !== user?.email) {
@@ -34,9 +39,9 @@ const ManageForm = () => {
             }
         }
         templateFetch();
-    }, [tid, user, navigate]);
+    }, [tid, loading]);
 
-    if (isLoading) {
+    if (isLoading || loading) {
         return (
             <div className="max-w-4xl mx-auto p-6 flex items-center justify-center min-h-[400px]">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>

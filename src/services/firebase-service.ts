@@ -1,6 +1,6 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import firebaseConfig from "../keys/firebaseSDK";
-import { Template, User, UserData } from "../types/types";
+import { Template, User } from "../types/types";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, collection, serverTimestamp, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 const app = initializeApp(firebaseConfig);
@@ -8,12 +8,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 async function createTemplate(creatorEmail: string): Promise<string> {
-    // const templateCol = collection(db, "templatesDB");
     const userRef = doc(db, "usersDB", creatorEmail)
-
-    // if(!creatorEmail){
-    //     throw new Error("User is not Logged in")
-    // }
 
     const templateInitialData = {
         title: "New Template",
@@ -24,8 +19,6 @@ async function createTemplate(creatorEmail: string): Promise<string> {
         likes: 0,
         createdAt: serverTimestamp(),
     }
-
-    // const newTemplate = await addDoc(templateCol, templateInitialData)
 
     const templateRef = doc(collection(db, "templatesDB"));
 
@@ -212,20 +205,4 @@ async function signInWithPassword(email: string, password: string): Promise<void
     }
 }
 
-async function getUserData(email: string): Promise<UserData | undefined> {
-    const userRef = doc(db, "usersDB", email);
-    const docSnap = await getDoc(userRef);
-
-    if (docSnap.exists()) {
-        return {
-            email: docSnap.data().email,
-            templatesID: docSnap.data().templatesID,
-            admins: docSnap.data().admins,
-            author_admin: docSnap.data().author_admin,
-            liked: docSnap.data().liked,
-            commented: docSnap.data().commented,
-        }
-    }
-}
-
-export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, getTemplate, getUserData, deleteTemplate, setTemplate }
+export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, getTemplate, deleteTemplate, setTemplate }
