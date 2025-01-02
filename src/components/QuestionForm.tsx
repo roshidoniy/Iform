@@ -34,7 +34,7 @@ const QuestionForm = () => {
     useEffect(() => {        
         console.log(questions)
     }, [questions])
-
+    
     const removeQuestion = (id: number) => {
         setQuestions(questions.filter(q => q.id !== id));
     };

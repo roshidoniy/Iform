@@ -9,7 +9,6 @@ export default function Header() {
     const { user, loading } = useAuth();
     const auth = getAuth();
     const navigate = useNavigate();
-    console.log("Header render")
 
     const handleSignOut = async () => {
         try {
@@ -57,38 +56,34 @@ export default function Header() {
                         </form>
                     </div>
 
-                    <div className="relative">
-                        <button
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex items-center focus:outline-none"
-                        >
-                            {loading ? (
-                                <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
-                            ) : (
-                                <div className="flex items-center">
-                                    {user?.photoURL ? (
-                                        <img
-                                            className="h-8 w-8 rounded-full object-cover"
-                                            src={user.photoURL}
-                                            alt="User avatar"
-                                        />
-                                    ) : (
-                                        <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-                                            <span className="text-white text-sm">
-                                                {user?.email?.charAt(0).toUpperCase() || 'U'}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </button>
-                            {/* display none when IsdropdownOpen is false */}
+                    {loading ? (
+                        <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
+                    ) : user ? (
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="flex items-center focus:outline-none"
+                            >
+                                {user.photoURL ? (
+                                    <img
+                                        className="h-8 w-8 rounded-full object-cover"
+                                        src={user.photoURL}
+                                        alt="User avatar"
+                                    />
+                                ) : (
+                                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
+                                        <span className="text-white text-sm">
+                                            {user.email?.charAt(0).toUpperCase() || 'U'}
+                                        </span>
+                                    </div>
+                                )}
+                            </button>
                             
                             <div className={`${isDropdownOpen ? 'block' : 'hidden'} absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5`}>
                                 <div className="py-1">
                                     <div className="px-4 py-2 text-sm">
-                                        <p className="font-medium">{user?.displayName || 'User'}</p>
-                                        <p className="text-gray-500 text-xs">{user?.email}</p>
+                                        <p className="font-medium">{user.displayName || 'User'}</p>
+                                        <p className="text-gray-500 text-xs">{user.email}</p>
                                     </div>
                                     <hr />
                                     <button
@@ -112,7 +107,23 @@ export default function Header() {
                                     </button>
                                 </div>
                             </div>
-                    </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center space-x-4">
+                            <Link
+                                to="/login"
+                                className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium rounded-lg transition-colors"
+                            >
+                                Log in
+                            </Link>
+                            <Link
+                                to="/signup"
+                                className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Sign up
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>
