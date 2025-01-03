@@ -1,21 +1,22 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import firebaseConfig from "../keys/firebaseSDK";
-import { FormAnswer, Template, User } from "../types/types";
+import type { Template, FormData, User, UserData } from "../types/types";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, collection, serverTimestamp, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-async function submitForm(templateID: string, email: string, answer: FormAnswer[]): Promise<void> {
-    const templateRef = doc(db, "templatesDB", templateID);
-    const userRef = doc(db, "usersDB", email);
+async function submitForm(formData: FormData): Promise<void> {
+    const templateRef = doc(db, "templatesDB", formData.templateID);
+    const userRef = doc(db, "usersDB", formData.authorEmail);
+
     await updateDoc(templateRef, {
-        answers: arrayUnion(answer)
+        answers: arrayUnion({authorEmail: formData.authorEmail, answer: formData.answer})
     })
 
     await updateDoc(userRef, {
-        answers: arrayUnion(answer)
+        answered: arrayUnion({ authorEmail: formData.authorEmail, answer: formData.answer })
     })
 }
 
@@ -28,6 +29,7 @@ async function createTemplate(creatorEmail: string): Promise<string> {
         description: "",
         image_url: "",
         questions: [],
+        answers: [],
         likes: 0,
         createdAt: serverTimestamp(),
     }
@@ -105,6 +107,7 @@ async function addUserToDB(email: string): Promise<void> {
         admins: [],
         author_admin: [],
         templatesID: [],
+        answered: [],
         liked: [],
         commented: [],
         createdAt: serverTimestamp(),
@@ -140,7 +143,7 @@ function getAdmins(ownerEmail: string, onUpdate: (admins: string[]) => void, onE
         userRef,
         (doc) => {
             if (doc.exists()) {
-                const userData = doc.data();
+                const userData: UserData = doc.data() as UserData;
                 onUpdate(userData.admins || []);
             } else {
                 onUpdate([]);

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import type { FormAnswer, Template } from "../../types/types";
+import type { Template, AnswerOfQuestion } from "../../types/types";
 import { useParams, Link } from "react-router";
-import { getTemplate } from "../../services/firebase-service";
+import { getTemplate, submitForm } from "../../services/firebase-service";
 import { useAuth } from "../../context/AuthContext";
 
 const ViewForm = () => {
@@ -10,7 +10,7 @@ const ViewForm = () => {
     const [error, setError] = useState<string>("");
     const { tid } = useParams();
     const { user } = useAuth();
-    const answersRef = useRef<FormAnswer[]>([]);
+    const answerRef = useRef<AnswerOfQuestion[]>([]);
 
     useEffect(() => {
         async function fetchTemplate() {
@@ -21,7 +21,7 @@ const ViewForm = () => {
                 if (templateData) {
                     setTemplate(templateData);
                     templateData.questions.forEach((q) => {
-                        answersRef.current.push({questionId: q.id, question: q.question, answer: "" })
+                        answerRef.current.push({questionId: q.id, question: q.question, answer: "" })
                     })
                 } else {
                     setError("Template not found");
@@ -39,16 +39,16 @@ const ViewForm = () => {
     const handleAnswerChange = (questionId: number, question: string, value: string | string[]) => {
         if (!user) return;
         
-        const existingAnswerIndex = answersRef.current.findIndex(a => a.questionId === questionId);
+        const existingAnswerIndex = answerRef.current.findIndex(a => a.questionId === questionId);
         const newAnswer = { questionId, question, answer: value };
         
-        answersRef.current[existingAnswerIndex] = newAnswer;
+        answerRef.current[existingAnswerIndex] = newAnswer;
     }
 
     const handleCheckboxChange = (questionId: number, question: string, option: string, checked: boolean) => {
         if (!user) return;
         
-        const existingAnswer = answersRef.current.find(a => a.questionId === questionId);
+        const existingAnswer = answerRef.current.find(a => a.questionId === questionId);
         const currentValues = (existingAnswer?.answer as string[]) || [];
         
         let newValues: string[];
@@ -61,22 +61,17 @@ const ViewForm = () => {
         handleAnswerChange(questionId, question, newValues);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!user) return;
-        answersRef.current.forEach((answer) => {
+        answerRef.current.forEach((answer) => {
             if (answer.answer.length === 0) {
-                console.log(answer.answer.length);
-                
                 setError("Please fill in all the required fields");
                 return;
             }
+
         });
-
-        console.log("Submitting answers:", answersRef.current);
-        // Add submission logic here
+        await submitForm({templateID: tid as string, authorEmail: user?.email as string, answer: answerRef.current});
     };
-
-    console.log("Render")
 
     if (isLoading) return (
         <div className="min-h-screen flex items-center justify-center">
@@ -118,17 +113,18 @@ const ViewForm = () => {
             )}
     
             <div className="mb-8">
-                <h1 className="text-5xl text-center font-bold text-gray-900 mb-3">{template.title}</h1>
-                {template.description && (
-                    <p className="text-gray-600">{template.description}</p>
-                )}
                 {template.image_url && (
                     <img 
                         src={template.image_url} 
                         alt="Form cover" 
-                        className="mt-4 w-full h-48 object-cover rounded-lg"
+                        className="mt-4 w-full h-48 object-cover object-center rounded-xl"
                     />
                 )}
+                <h1 className="text-5xl text-center font-bold text-gray-900 my-3">{template.title}</h1>
+                {template.description && (
+                    <p className="text-gray-600">{template.description}</p>
+                )}
+                
             </div>
 
             <div className="space-y-6">

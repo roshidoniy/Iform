@@ -5,15 +5,6 @@ export interface User {
     password: string;
 }
 
-// export interface UserData {
-//     email: string;
-//     templatesID: string[];
-//     admins: string[];
-//     author_admin: string[];
-//     liked: string[];
-//     commented: string[];
-// }
-
 export interface Template {
     id: string;
     title: string;
@@ -21,8 +12,20 @@ export interface Template {
     description: string;
     image_url: string;
     questions: Question[];
+    answers?: FormData[];
     likes: number;
-    createdAt: Timestamp;
+    createdAt?: Timestamp;
+}
+
+export interface UserData {
+    email: string;
+    templatesID: string[];
+    admins: string[];
+    author_admin: string[];
+    liked: string[];
+    commented: string[];
+    answered?: FormData[];
+    createdAt?: Timestamp;
 }
 
 export interface Question {
@@ -32,7 +35,13 @@ export interface Question {
     options: string[]
 }
 
-export interface FormAnswer {
+export interface FormData {
+    authorEmail: string,
+    templateID: string,
+    answer: AnswerOfQuestion[]
+}
+
+export interface AnswerOfQuestion {
     questionId: number;
     question: string;
     answer: string | string[];
