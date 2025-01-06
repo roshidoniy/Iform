@@ -1,15 +1,15 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import firebaseConfig from "../keys/firebaseSDK";
 import type { Template, FormData, User, UserData } from "../types/types";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, collection, serverTimestamp, query, where, getDocs, deleteDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, collection, serverTimestamp, query, where, getDocs, deleteDoc} from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
 async function submitForm(formData: FormData): Promise<void> {
-    const templateRef = doc(db, "templatesDB", formData.templateID);
-    const userRef = doc(db, "usersDB", formData.authorEmail);
+    const templateRef = doc(db, "templatesDB", formData.templateID!);
+    const userRef = doc(db, "usersDB", formData.authorEmail!);
 
     await updateDoc(templateRef, {
         answers: arrayUnion({authorEmail: formData.authorEmail, answer: formData.answer})
@@ -18,6 +18,28 @@ async function submitForm(formData: FormData): Promise<void> {
     await updateDoc(userRef, {
         answered: arrayUnion({ authorEmail: formData.authorEmail, answer: formData.answer })
     })
+}
+
+async function searchTemplates(searchQuery: string): Promise<Partial<Template>[]> {
+    if(!searchQuery) return []
+
+    const templateCol = collection(db, "templatesDB");
+    const templateDoc = await getDocs(templateCol);
+    const searchResults: Partial<Template>[] = [];
+
+    if(templateDoc.empty) return []
+
+    templateDoc.docs.forEach((doc) => {
+        if(doc.data().title.toLowerCase().includes(searchQuery.toLowerCase())){
+            searchResults.push({
+                id: doc.id as string,
+                title: doc.data().title as string,
+                description: doc.data().description as string,
+                image_url: doc.data().image_url as string,
+            })
+        }
+    })
+    return searchResults
 }
 
 async function createTemplate(creatorEmail: string): Promise<string> {
@@ -181,12 +203,9 @@ async function signUpUser(userInfo: User) {
         return user
     } catch (error) {
         if(error instanceof FirebaseError){
-            console.log("FirebaseError");
             throw new Error(error.code)
         }
         else if(error instanceof Error){
-            console.log("Error");
-            
             throw new Error(error.message)
         }
     }
@@ -220,4 +239,4 @@ async function signInWithPassword(email: string, password: string): Promise<void
     }
 }
 
-export { signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, getTemplate, deleteTemplate, setTemplate, submitForm }
+export { searchTemplates, signUpUser, continueWithGoogle, signInWithPassword, addAdmin, getAdmins, deleteAdmin, createTemplate, getTemplates, getTemplate, deleteTemplate, setTemplate, submitForm }

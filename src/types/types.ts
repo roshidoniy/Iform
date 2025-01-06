@@ -36,8 +36,8 @@ export interface Question {
 }
 
 export interface FormData {
-    authorEmail: string,
-    templateID: string,
+    authorEmail?: string,
+    templateID?: string,
     answer: AnswerOfQuestion[]
 }
 

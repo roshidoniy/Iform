@@ -14,7 +14,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const auth = getAuth();
 
     useEffect(() => {
-        console.log("Auth re-render")
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
             setLoading(false);

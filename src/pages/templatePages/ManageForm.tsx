@@ -14,14 +14,10 @@ const ManageForm = () => {
     const navigate = useNavigate();
     const { user, loading } = useAuth();
 
-    console.log("RENDER");
-
     useEffect(() => {
         async function templateFetch() {
             setIsLoading(true);
-            console.log("BEFORE LOAD")
             if (loading) return
-            console.log("After LOAD")
 
             try {
                 const template = await getTemplate(tid as string);
