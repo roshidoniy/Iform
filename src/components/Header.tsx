@@ -61,6 +61,8 @@ export default function Header() {
                     ) : user ? (
                         <div className="relative">
                             <button
+                                disabled={!user.emailVerified}
+                                title={user.emailVerified ? "Settings" : "Please verify your email address"}
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                 className="flex items-center focus:outline-none"
                             >
@@ -112,13 +114,13 @@ export default function Header() {
                         <div className="flex items-center space-x-4">
                             <Link
                                 to="/login"
-                                className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium rounded-lg transition-colors"
+                                className="px-4 py-2 text-blue-600 hover:text-blue-800 font-bold rounded-lg transition-colors"
                             >
                                 Log in
                             </Link>
                             <Link
                                 to="/signup"
-                                className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                className="text-white px-4 py-2 bg-blue-600 outline outline-2 font-bold rounded-lg hover:bg-transparent hover:outline-blue-600"
                             >
                                 Sign up
                             </Link>

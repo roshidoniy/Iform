@@ -11,6 +11,7 @@ export interface Template {
     creator: string;
     description: string;
     image_url: string;
+    comments: Comment[];
     questions: Question[];
     answers?: FormData[];
     likes: number;
@@ -38,6 +39,7 @@ export interface Question {
 export interface FormData {
     authorEmail?: string,
     templateID?: string,
+    createdAt: Timestamp,
     answer: AnswerOfQuestion[]
 }
 
@@ -45,4 +47,10 @@ export interface AnswerOfQuestion {
     questionId: number;
     question: string;
     answer: string | string[];
+}
+
+export interface Comment {
+    authorEmail: string,
+    createdAt: Timestamp,
+    comment_text: string,
 }

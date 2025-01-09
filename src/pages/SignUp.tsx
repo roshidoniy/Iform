@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { signUpUser, continueWithGoogle } from '../services/firebase-service';
+import { signUpUser, continueWithGoogle } from '../services/firebase-users';
 import { Link, useNavigate } from 'react-router';
 import { getAuth, User } from 'firebase/auth';
+import { toast } from 'react-toastify';
 
 export default function SignUp() {
     const [email, setEmail] = useState('');
@@ -11,6 +12,8 @@ export default function SignUp() {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const auth = getAuth();
+
+    const notify = () => toast.info("Please check your email for the login link");
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
@@ -30,6 +33,7 @@ export default function SignUp() {
         }
         try {
             await signUpUser({email, password});
+            notify();
             
         } catch (error) {
             if (error instanceof Error) {
@@ -92,7 +96,7 @@ export default function SignUp() {
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 px-2 text-gray-600"
+                                className="absolute inset-y-0 right-0 px-2 text-gray-600 z-10"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? (
@@ -120,7 +124,7 @@ export default function SignUp() {
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 px-2 text-gray-600"
+                                className="absolute inset-y-0 right-0 px-2 text-gray-600 z-10"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? (

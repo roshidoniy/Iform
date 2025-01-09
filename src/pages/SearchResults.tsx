@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router";
-import { searchTemplates } from "../services/firebase-service";
+import { searchTemplates } from "../services/firebase-templates";
 import { Template } from "../types/types";
 
 const SearchResults = () => {
     const [searchParams] = useSearchParams();
-    const [searchResults, setSearchResults] = useState<Template[]>([]);
+    const [searchResults, setSearchResults] = useState<Partial<Template>[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string>("");
 
@@ -20,7 +20,7 @@ const SearchResults = () => {
                     return;
                 }
                 const results = await searchTemplates(query);
-                setSearchResults(results as Template[]);
+                setSearchResults(results);
 
             } catch (error) {
                 setError("Failed to fetch search results");
@@ -72,7 +72,7 @@ const SearchResults = () => {
                 {searchResults.map((template) => (
                     <Link 
                         key={template?.id} 
-                        to={`/template/${template?.id}`}
+                        to={`/template/${template?.id}/view`}
                         className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                     >
                         <div className="p-6">

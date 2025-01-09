@@ -1,13 +1,16 @@
 import { useEffect, useState, useRef } from "react";
 import type { Template, AnswerOfQuestion } from "../../types/types";
 import { useParams, Link } from "react-router";
-import { getTemplate, submitForm } from "../../services/firebase-service";
+import { getTemplate, submitForm, likeTemplate, unlikeTemplate, hasUserLiked } from "../../services/firebase-templates";
 import { useAuth } from "../../context/AuthContext";
+import Comments from "../../components/Comments";
 
 const ViewForm = () => {
     const [template, setTemplate] = useState<Template | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string>("");
+    const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(0);
     const { tid } = useParams();
     const { user } = useAuth();
     const answerRef = useRef<AnswerOfQuestion[]>([]);
@@ -20,9 +23,15 @@ const ViewForm = () => {
                 const templateData = await getTemplate(tid);
                 if (templateData) {
                     setTemplate(templateData);
+                    setLikeCount(templateData.likes);
                     templateData.questions.forEach((q) => {
                         answerRef.current.push({questionId: q.id, question: q.question, answer: "" })
-                    })
+                    });
+                    
+                    if (user?.email) {
+                        const liked = await hasUserLiked(tid, user.email);
+                        setIsLiked(liked);
+                    }
                 } else {
                     setError("Template not found");
                 }
@@ -34,20 +43,33 @@ const ViewForm = () => {
             }
         }
         fetchTemplate();
-    }, [tid]);
+    }, [tid, user?.email]);
+
+    const handleLike = async () => {
+        if (!user?.email || !tid) return;
+        
+        try {
+            if (isLiked) {
+                setLikeCount(prev => prev - 1);
+                await unlikeTemplate(tid, user.email);
+            } else {
+                setLikeCount(prev => prev + 1);
+                await likeTemplate(tid, user.email);
+            }
+            setIsLiked(!isLiked);
+        } catch (error) {
+            console.error("Error updating like:", error);
+        }
+    };
 
     const handleAnswerChange = (questionId: number, question: string, value: string | string[]) => {
-        if (!user) return;
-        
         const existingAnswerIndex = answerRef.current.findIndex(a => a.questionId === questionId);
         const newAnswer = { questionId, question, answer: value };
-        
+
         answerRef.current[existingAnswerIndex] = newAnswer;
     }
 
     const handleCheckboxChange = (questionId: number, question: string, option: string, checked: boolean) => {
-        if (!user) return;
-        
         const existingAnswer = answerRef.current.find(a => a.questionId === questionId);
         const currentValues = (existingAnswer?.answer as string[]) || [];
         
@@ -62,7 +84,6 @@ const ViewForm = () => {
     };
 
     const handleSubmit = async () => {
-        if (!user) return;
         answerRef.current.forEach((answer) => {
             if (answer.answer.length === 0) {
                 setError("Please fill in all the required fields");
@@ -113,18 +134,43 @@ const ViewForm = () => {
             )}
     
             <div className="mb-8">
-                {template.image_url && (
+                {template?.image_url && (
                     <img 
                         src={template.image_url} 
                         alt="Form cover" 
                         className="mt-4 w-full h-48 object-cover object-center rounded-xl"
                     />
                 )}
-                <h1 className="text-5xl text-center font-bold text-gray-900 my-3">{template.title}</h1>
-                {template.description && (
-                    <p className="text-gray-600">{template.description}</p>
+                <div className="flex items-center justify-between mt-6">
+                    <h1 className="text-5xl font-bold text-gray-900">{template?.title}</h1>
+                    <button
+                        onClick={handleLike}
+                        disabled={!user}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                            user ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'
+                        }`}
+                        title={user ? (isLiked ? 'Unlike' : 'Like') : 'Login to like'}
+                    >
+                        <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            fill={isLiked ? "currentColor" : "none"}
+                            viewBox="0 0 24 24" 
+                            strokeWidth={1.5} 
+                            stroke="currentColor" 
+                            className={`w-6 h-6 transition-colors duration-300 ${
+                                isLiked ? 'text-red-500' : 'text-gray-500'
+                            }`}
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                        </svg>
+                        <span className={`font-medium ${isLiked ? 'text-red-500' : 'text-gray-500'}`}>
+                            {likeCount}
+                        </span>
+                    </button>
+                </div>
+                {template?.description && (
+                    <p className="text-gray-600 mt-4">{template.description}</p>
                 )}
-                
             </div>
 
             <div className="space-y-6">
@@ -227,6 +273,8 @@ const ViewForm = () => {
                     </Link>
                 )}
             </div>
+
+            <Comments templateId={tid as string} user={user} commentsList={template?.comments || []} />
         </div>
     );
 };

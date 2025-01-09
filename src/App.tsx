@@ -12,7 +12,6 @@ import ViewForm from "./pages/templatePages/ViewForm";
 
 function App() {
     return (
-        <div>
             <AuthProvider>
             <Header />
             <Routes>
@@ -27,7 +26,6 @@ function App() {
                 <Route path="*" element={<div>404</div>} />
             </Routes>
         </AuthProvider>
-        </div>
     );
 }
 

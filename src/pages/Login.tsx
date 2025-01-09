@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { continueWithGoogle, signInWithPassword } from '../services/firebase-service';
+import { continueWithGoogle, signInWithPassword } from '../services/firebase-users';
 import { Link, useNavigate } from 'react-router';
 import { getAuth, User } from 'firebase/auth';
 
@@ -10,6 +10,7 @@ export default function Login() {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const auth = getAuth();
+
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
@@ -87,7 +88,7 @@ export default function Login() {
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 px-2 text-gray-600"
+                                className="absolute inset-y-0 right-0 px-2 text-gray-600 z-10"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? (

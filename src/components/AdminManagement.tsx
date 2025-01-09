@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { addAdmin, deleteAdmin, getAdmins } from '../services/firebase-service';
+import { addAdmin, deleteAdmin, getAdmins } from '../services/firebase-users';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminManagement() {

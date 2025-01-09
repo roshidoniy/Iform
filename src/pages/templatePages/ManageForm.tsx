@@ -1,7 +1,7 @@
 import {  useEffect, useState } from "react";
 import { Question, Template } from "../../types/types";
 import { useParams } from "react-router";
-import { getTemplate, setTemplate } from "../../services/firebase-service";
+import { getTemplate, setTemplate } from "../../services/firebase-templates";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 
@@ -104,7 +104,7 @@ const ManageForm = () => {
     return (
         <div className="max-w-4xl mx-auto p-6">
             <div className="mb-12 text-center">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Form: {tid}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Form</h1>
                 <p className="text-gray-600">Design your form by adding questions and customizing settings</p>
             </div>
 
