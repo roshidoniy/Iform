@@ -9,6 +9,7 @@ import { AuthProvider } from './context/AuthContext';
 import ManageForm from "./pages/templatePages/ManageForm";
 import TemplateRouter from "./pages/templatePages/TemplateRouter";
 import ViewForm from "./pages/templatePages/ViewForm";
+import Results from "./pages/templatePages/Results";
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
                 <Route index element={<Home />} />
                 <Route path="template/:tid" element={<TemplateRouter />} />
                 <Route path="template/:tid/edit" element={<ManageForm />} />
+                <Route path="template/:tid/edit/results" element={<Results />} />
                 <Route path="template/:tid/view" element={<ViewForm />} />
                 <Route path="search" element={<SearchResults /> } />
                 <Route path="signup" element={<SignUp />} />

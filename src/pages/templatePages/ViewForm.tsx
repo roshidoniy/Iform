@@ -24,8 +24,8 @@ const ViewForm = () => {
                 if (templateData) {
                     setTemplate(templateData);
                     setLikeCount(templateData.likes);
-                    templateData.questions.forEach((q) => {
-                        answerRef.current.push({questionId: q.id, question: q.question, answer: "" })
+                    templateData.questions.forEach((q, index) => {
+                        answerRef.current[index] = {questionId: q.id, question: q.question, answer: "" }
                     });
                     
                     if (user?.email) {
@@ -65,6 +65,10 @@ const ViewForm = () => {
     const handleAnswerChange = (questionId: number, question: string, value: string | string[]) => {
         const existingAnswerIndex = answerRef.current.findIndex(a => a.questionId === questionId);
         const newAnswer = { questionId, question, answer: value };
+        // if(existingAnswerIndex === -1) {
+        //     existingAnswerIndex = answerRef.current.length;
+        // }
+        console.log(answerRef.current);
 
         answerRef.current[existingAnswerIndex] = newAnswer;
     }
@@ -84,6 +88,7 @@ const ViewForm = () => {
     };
 
     const handleSubmit = async () => {
+
         answerRef.current.forEach((answer) => {
             if (answer.answer.length === 0) {
                 setError("Please fill in all the required fields");

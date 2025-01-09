@@ -7,11 +7,11 @@ async function submitForm(formData: Partial<FormData>): Promise<void> {
     const userRef = doc(db, "usersDB", formData.authorEmail!);
 
     await updateDoc(templateRef, {
-        answers: arrayUnion({authorEmail: formData.authorEmail, createdAt: serverTimestamp(), answer: formData.answer})
+        answers: arrayUnion({authorEmail: formData.authorEmail, createdAt: Timestamp.now(), answer: formData.answer})
     })
 
     await updateDoc(userRef, {
-        answered: arrayUnion({ authorEmail: formData.authorEmail, createdAt: serverTimestamp(), answer: formData.answer })
+        answered: arrayUnion({ authorEmail: formData.authorEmail, createdAt: Timestamp.now(), answer: formData.answer })
     })
 }
 
@@ -97,7 +97,6 @@ async function getTemplates(creatorEmail: string) {
 async function getTemplate(tid: string): Promise<Template | undefined> {
     const templateRef = doc(db, "templatesDB", tid);
     const docSnap = await getDoc(templateRef);
-
     if (docSnap.exists()) {
         return {
             id: docSnap.id,
@@ -106,6 +105,7 @@ async function getTemplate(tid: string): Promise<Template | undefined> {
             image_url: docSnap.data().image_url,
             comments: docSnap.data().comments,
             questions: docSnap.data().questions,
+            answers: docSnap.data().answers,
             creator: docSnap.data().creator,
             likes: docSnap.data().likes,
             createdAt: docSnap.data().createdAt,
