@@ -1,27 +1,40 @@
-# IForms
+# IForms 📝
 
-A modern form management system built with React, TypeScript, and Firebase.
+A modern form management system built with React, TypeScript, and Firebase. Create, share, and manage forms with real-time updates and interactive features.
 
-## Features
+## ✨ Features
 
-- 📝 Create and manage dynamic forms
+- 📋 Create and manage dynamic form templates
+- 🔄 Real-time updates for comments and likes
 - 👥 User authentication with email and Google sign-in
 - 👮‍♂️ Admin management system
-- 🔒 Secure data handling with Firebase
+- 💬 Interactive comments on forms
+- ❤️ Like/Unlike functionality
+- 🔍 Search functionality for templates
 - 🎨 Modern UI with Tailwind CSS
 - 📱 Fully responsive design
+- 🔒 Secure data handling with Firebase
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Frontend**: React + TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-- **Backend**: Firebase
-  - Authentication
-  - Firestore Database
-- **Routing**: React Router DOM
+- **Frontend**:
+  - React 19
+  - TypeScript
+  - Tailwind CSS for styling
+  - React Router DOM for navigation
 
-## Getting Started
+- **Backend & Services**:
+  - Firebase
+    - Authentication (Email & Google)
+    - Firestore Database
+    - Real-time updates
+
+- **Build Tools**:
+  - Vite
+  - PostCSS
+  - ESLint
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -42,7 +55,7 @@ cd iforms
 npm install
 ```
 
-3. Create a `.env` file in the root directory and add your Firebase configuration:
+3. Create a `.env` file in the root directory and add your configuration:
 ```env
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
@@ -57,42 +70,64 @@ VITE_FIREBASE_APP_ID=your_app_id
 npm run dev
 ```
 
-### Building for Production
-
-```bash
-npm run build
-```
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/
-├── components/        # Reusable components
-├── pages/            # Page components
-├── services/         # Firebase and other services
-├── types/           # TypeScript type definitions
-└── assets/          # Static assets
+├── components/          # Reusable UI components
+│   ├── Comments.tsx    # Comments component
+│   ├── Header.tsx      # Navigation header
+│   └── AdminManagement.tsx  # Admin management
+├── pages/              # Page components
+│   ├── Home.tsx        # Home page
+│   ├── Login.tsx       # Authentication pages
+│   └── templatePages/  # Template-related pages
+├── services/           # Firebase services
+│   ├── firebase-users.ts    # User-related operations
+│   └── firebase-templates.ts # Template operations
+├── types/             # TypeScript type definitions
+├── context/           # React Context providers
+└── assets/           # Static assets
 ```
 
-## Features in Detail
+## 🔥 Features in Detail
 
 ### Authentication
 - Email/Password sign up and login
 - Google authentication
+- Email verification
 - Protected routes
+- Persistent login state
 
 ### Form Management
-- Create dynamic forms
-- Multiple question types
-- Required field validation
+- Create dynamic forms with multiple question types:
+  - Single line text
+  - Multi-line text
+  - Multiple choice
+  - Checkboxes
+  - Dropdown
 - Form preview
+- Cover image upload
+- Real-time form updates
 
 ### Admin Features
 - Add/remove admin users
+- Real-time admin list updates
 - Manage form permissions
 - View form submissions
 
-## Contributing
+### Social Features
+- Comment on forms
+- Like/Unlike forms
+- Real-time comment updates
+- User avatars in comments
+
+### Search & Discovery
+- Search forms by title and description
+- View popular forms
+- Browse user's created forms
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -100,7 +135,11 @@ src/
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## Acknowledgments
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
 
 - [React](https://reactjs.org/)
 - [Vite](https://vitejs.dev/)
