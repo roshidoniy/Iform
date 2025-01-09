@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import type { Template, AnswerOfQuestion } from "../../types/types";
-import { useParams, Link } from "react-router";
+import { useParams, Link, useNavigate } from "react-router";
 import { getTemplate, submitForm, likeTemplate, unlikeTemplate, hasUserLiked } from "../../services/firebase-templates";
 import { useAuth } from "../../context/AuthContext";
 import Comments from "../../components/Comments";
@@ -14,6 +14,7 @@ const ViewForm = () => {
     const { tid } = useParams();
     const { user } = useAuth();
     const answerRef = useRef<AnswerOfQuestion[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchTemplate() {
@@ -97,6 +98,7 @@ const ViewForm = () => {
 
         });
         await submitForm({templateID: tid as string, authorEmail: user?.email as string, answer: answerRef.current});
+        navigate("/")
     };
 
     if (isLoading) return (
