@@ -18,7 +18,6 @@ const Results = () => {
             if (loading) return;
 
             try {
-                console.log(tid);
                 const templateData = await getTemplate(tid as string);
                 if (!templateData) {
                     navigate("/");
@@ -29,7 +28,6 @@ const Results = () => {
                     navigate(`/template/${tid}/view`);
                     return;
                 }
-                console.log(templateData);
                 setTemplate(templateData);
                 setSubmissions(templateData.answers || []);
             } catch (error) {

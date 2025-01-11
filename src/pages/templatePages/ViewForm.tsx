@@ -66,10 +66,6 @@ const ViewForm = () => {
     const handleAnswerChange = (questionId: number, question: string, value: string | string[]) => {
         const existingAnswerIndex = answerRef.current.findIndex(a => a.questionId === questionId);
         const newAnswer = { questionId, question, answer: value };
-        // if(existingAnswerIndex === -1) {
-        //     existingAnswerIndex = answerRef.current.length;
-        // }
-        console.log(answerRef.current);
 
         answerRef.current[existingAnswerIndex] = newAnswer;
     }

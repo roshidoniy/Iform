@@ -9,7 +9,6 @@ const Home = () => {
     const [isCreating, setIsCreating] = useState(false);
     const {user} = useAuth();
     const [templates, setTemplates] = useState<Template[]>([]);
-    console.log(user?.emailVerified)
     const navigate = useNavigate();
 
     useEffect(() => {
