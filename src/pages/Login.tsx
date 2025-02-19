@@ -14,9 +14,10 @@ export default function Login() {
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
-            if (user) {
+            if (user && user.emailVerified) {
                 navigate('/');
             }
+            
         });
 
         return () => unsubscribe();

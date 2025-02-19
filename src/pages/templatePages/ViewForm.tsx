@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import type { Template, AnswerOfQuestion } from "../../types/types";
 import { useParams, Link, useNavigate } from "react-router";
-import { getTemplate, submitForm, likeTemplate, unlikeTemplate, hasUserLiked } from "../../services/firebase-templates";
+import { getTemplate, submitForm, likeTemplate, unlikeTemplate, hasUserLiked, getLikeCount } from "../../services/firebase-templates";
 import { useAuth } from "../../context/AuthContext";
 import Comments from "../../components/Comments";
 
@@ -24,7 +24,6 @@ const ViewForm = () => {
                 const templateData = await getTemplate(tid);
                 if (templateData) {
                     setTemplate(templateData);
-                    setLikeCount(templateData.likes);
                     templateData.questions.forEach((q, index) => {
                         answerRef.current[index] = {questionId: q.id, question: q.question, answer: "" }
                     });
@@ -44,6 +43,17 @@ const ViewForm = () => {
             }
         }
         fetchTemplate();
+
+        // Set up real-time like count listener
+        if (tid) {
+            const unsubscribe = getLikeCount(tid, 
+                (count) => setLikeCount(count),
+                (error) => console.error("Error getting like count:", error)
+            );
+
+            // Cleanup subscription on unmount
+            return () => unsubscribe();
+        }
     }, [tid, user?.email]);
 
     const handleLike = async () => {

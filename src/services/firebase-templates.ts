@@ -1,5 +1,5 @@
 import type { Template, FormData } from "../types/types";
-import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, deleteDoc, increment, query, where, serverTimestamp, Timestamp } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs, deleteDoc, increment, query, where, serverTimestamp, Timestamp, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase-users";
 
 async function submitForm(formData: Partial<FormData>): Promise<void> {
@@ -163,6 +163,27 @@ async function submitComment({templateID, authorEmail, comment_text}: {templateI
     })
 }
 
+function getLikeCount(templateId: string, onUpdate: (likeCount: number) => void, onError?: (error: Error) => void) {
+    const templateRef = doc(db, "templatesDB", templateId);
+    
+    return onSnapshot(
+        templateRef,
+        (doc) => {
+            if (doc.exists()) {
+                onUpdate(doc.data().likes || 0);
+            } else {
+                onUpdate(0);
+            }
+        },
+        (error) => {
+            console.error("Error fetching like count:", error);
+            if (onError) {
+                onError(error);
+            }
+        }
+    );
+}
+
 export { 
     searchTemplates, 
     createTemplate, 
@@ -174,5 +195,6 @@ export {
     likeTemplate, 
     unlikeTemplate, 
     hasUserLiked, 
-    submitComment 
-}; 
+    submitComment,
+    getLikeCount 
+};
