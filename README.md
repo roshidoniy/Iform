@@ -14,6 +14,7 @@ A modern form management system built with React, TypeScript, and Firebase. Crea
 - 🎨 Modern UI with Tailwind CSS
 - 📱 Fully responsive design
 - 🔒 Secure data handling with Firebase
+- 🔄 Live like counter system
 
 ## 🛠️ Tech Stack
 
@@ -126,6 +127,13 @@ src/
 - Search forms by title and description
 - View popular forms
 - Browse user's created forms
+
+### Live Like Counter
+- Updates instantly when users like/unlike forms
+- Uses Firebase Realtime Database for live updates
+- Shows the current like count without page refresh
+- Provides visual feedback for user interactions
+- Prevents multiple likes from the same user
 
 ## 🤝 Contributing
 
