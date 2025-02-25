@@ -7,15 +7,26 @@ import { ToastContainer } from "react-toastify";
 
 const Home = () => {
     const [isCreating, setIsCreating] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const {user} = useAuth();
     const [templates, setTemplates] = useState<Template[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTemplates = async () => {
-            if(!user?.email) return;
-            const templates = await getTemplates(user.email);
-            setTemplates(templates);
+            if(!user?.email) {
+                setIsLoading(false);
+                return;
+            }
+            setIsLoading(true);
+            try {
+                const templates = await getTemplates(user.email);
+                setTemplates(templates);
+            } catch (error) {
+                console.error("Error fetching templates:", error);
+            } finally {
+                setIsLoading(false);
+            }
         }
         fetchTemplates();
     }, [user?.email]);
@@ -46,14 +57,22 @@ const Home = () => {
                     onClick={createTemplateHandler}
                     disabled={isCreating}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
+                    {isCreating ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    )}
                     New Template
                 </button>
             </div>
 
-            {templates.length === 0 ? (
+            {isLoading ? (
+                <div className="flex justify-center items-center py-20">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+            ) : templates.length === 0 ? (
                 <div className="text-center py-12">
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Templates Yet</h3>
                     <p className="text-gray-500">Create your first template to get started</p>
