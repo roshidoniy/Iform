@@ -8,13 +8,13 @@ import { ToastContainer } from "react-toastify";
 const Home = () => {
     const [isCreating, setIsCreating] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const {user} = useAuth();
+    const { user } = useAuth();
     const [templates, setTemplates] = useState<Template[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTemplates = async () => {
-            if(!user?.email) {
+            if (!user?.email) {
                 setIsLoading(false);
                 return;
             }
@@ -27,25 +27,25 @@ const Home = () => {
             } finally {
                 setIsLoading(false);
             }
-        }
+        };
         fetchTemplates();
     }, [user?.email]);
 
     const createTemplateHandler = async () => {
         setIsCreating(true);
-        if(!user?.email) {
+        if (!user?.email) {
             setIsCreating(false);
             return;
         }
         const id = await createTemplate(user.email);
         setIsCreating(false);
         navigate(`/template/${id}/edit`);
-    }
+    };
 
     const deleteTemplateHandler = async (templateID: string) => {
         await deleteTemplate(user?.email as string, templateID);
-        setTemplates(templates.filter(template => template.id !== templateID));
-    }
+        setTemplates(templates.filter((template) => template.id !== templateID));
+    };
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -55,7 +55,7 @@ const Home = () => {
                 <button
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                     onClick={createTemplateHandler}
-                    disabled={isCreating}
+                    disabled={isCreating || !user}
                 >
                     {isCreating ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -80,18 +80,18 @@ const Home = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {templates.map((template) => (
-                        <div 
+                        <div
                             key={template.id}
                             className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 ease-in-out relative group"
                         >
-                            <div 
+                            <div
                                 className="p-6 py-10 cursor-pointer"
                                 onClick={() => navigate(`/template/${template.id}/edit`)}
                             >
                                 {template.image_url && (
                                     <div className="rounded-lg overflow-hidden mb-4 shadow-sm">
-                                        <img 
-                                            src={template.image_url} 
+                                        <img
+                                            src={template.image_url}
                                             alt={template.title}
                                             className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                                         />
@@ -120,10 +120,10 @@ const Home = () => {
                                     </span>
                                 </div>
                             </div>
-                            
+
                             {/* Action buttons */}
                             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                <button 
+                                <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         deleteTemplateHandler(template.id);
@@ -142,6 +142,6 @@ const Home = () => {
             )}
         </div>
     );
-}
+};
 
 export default Home;
